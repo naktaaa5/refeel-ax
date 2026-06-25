@@ -865,13 +865,18 @@ function viewRead(){
   if(vid)h+=`<a href="${esc(url||('https://youtu.be/'+vid))}" target="_blank"><img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg" style="width:100%;max-width:480px;border-radius:12px;margin-bottom:14px;display:block;background:#eee"></a>`;
   h+=`<div style="font-size:22px;font-weight:800;line-height:1.35;margin-bottom:6px">${esc(c.front['title']||'')}</div>`;
   h+=`<div class="mt" style="margin-bottom:14px">${esc(src.split('/').slice(0,2).join(' / ').slice(0,60))}${url?` · <a href="${esc(url)}" target="_blank" style="color:var(--accent)">유튜브 ↗</a>`:''}</div>`;
-  const sm=(c.body||'').match(/## 🎬 큐레이션 요약\s*([\s\S]*?)(?=\n## |$)/);
-  const hasSum=!!sm;
-  const bodyShow=hasSum?sm[1].trim():(c.body||'(아직 요약 없음 — 아래 「블로그 요약 생성」을 눌러줘)');
-  h+=`<div style="white-space:pre-wrap;font-size:14.5px;line-height:1.85;border-top:1px solid var(--line2);padding-top:14px">${esc(bodyShow.slice(0,9000))}</div>`;
-  const tr=(c.body||'').match(/## 📄 전체 스크립트\s*([\s\S]*?)(?=\n## |$)/);
+  // 스크립트 섹션(전체 스크립트)만 떼어내고, 나머지(요약 전체)는 mdLite로 렌더.
+  // ※ 파일마다 스크립트가 요약 앞/뒤로 들어가고 요약이 여러 ## 소제목으로 나뉘어서, 단순 슬라이스 금지.
+  const _b=c.body||'';
+  const _trm=_b.match(/##\s*📄\s*전체 스크립트[^\n]*\r?\n([\s\S]*?)(?=\r?\n##\s|\r?\n#\s|$)/);
+  const trText=_trm?_trm[1].trim():'';
+  const readMd=(_trm?(_b.slice(0,_trm.index)+_b.slice(_trm.index+_trm[0].length)):_b).trim();
+  const hasSum=/##\s*🎬\s*큐레이션 요약/.test(_b);
+  if(readMd)h+=`<div class="brandbody" style="border-top:1px solid var(--line2);padding-top:14px">${mdLite(readMd)}</div>`;
+  else h+=`<div style="border-top:1px solid var(--line2);padding-top:14px;color:var(--mut);font-size:14px">아직 요약이 없어요 — 아래 「블로그 요약 생성」을 눌러줘.</div>`;
+  const tr=/##\s*📄\s*전체 스크립트/.test(_b);
   h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 4px">${hasSum?'':`<button class="act" id="rdSum" style="margin-top:0">📝 블로그 요약 생성</button>`}<button class="act" id="rdScript" style="margin-top:0;background:transparent;color:var(--ink);border:1px solid var(--line2)">📄 ${tr?(state.readScript?'스크립트 숨기기':'스크립트 보기'):'전체 스크립트 가져오기'}</button></div><div id="rdGenMsg" class="mt" style="margin-bottom:8px"></div>`;
-  if(state.readScript&&tr)h+=`<div style="white-space:pre-wrap;font-size:12.5px;line-height:1.7;color:var(--ink2);max-height:320px;overflow:auto;background:var(--pill);padding:12px 14px;border-radius:10px;margin-bottom:10px">${esc(tr[1].trim())}</div>`;
+  if(state.readScript&&tr)h+=`<div style="white-space:pre-wrap;font-size:12.5px;line-height:1.7;color:var(--ink2);max-height:360px;overflow:auto;background:var(--pill);padding:12px 14px;border-radius:10px;margin-bottom:10px">${trText?esc(trText):'(스크립트 내용이 비어 있어요)'}</div>`;
   h+=`<div class="sec">📌 내 메모 <span class="note">이게 카드 재료가 돼</span></div><div class="rule"></div>`;
   h+=`<input type="text" id="rdReason" class="ph" placeholder="이유 — 왜 좋았나?" value="${esc(reasonOf(c))}">`;
   h+=`<input type="text" id="rdOut" placeholder="아웃풋 — 어디 쓸까 (RE:KIT/릴스/클래스/컨설팅…)" value="${esc(c.front['output']&&c.front['output']!=='미정'?c.front['output']:'')}" style="margin-top:12px">`;
