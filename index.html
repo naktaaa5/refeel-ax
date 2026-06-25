@@ -1192,11 +1192,12 @@ function viewRevContent(){
   const R=periodRange();
   let h=head('Revenue × Content','매출 × 콘텐츠','"어떤 콘텐츠가 돈줄(클래스·심화·고가) 매출을 끄나" — 아임웹이 못 보는 교차.')+padOpen+periodBar(months);
   const MONEY=['클래스·중가','심화','고가'];
+  const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   const rdt={};raw.forEach(r=>{const dt=r['날짜'];if(!dt)return;const t=tierOf(r['결제액']);rdt[dt]=rdt[dt]||{};rdt[dt][t]=(rdt[dt][t]||0)+N(r['결제액']);});
   const dys=Object.keys(rdt).sort();const min=dys[0],max=dys[dys.length-1];
   const pub={};
-  (d.reels||[]).forEach(p=>{const dt=pickDate(p.front['published']);if(dt&&inRange(dt,R))(pub[dt]=pub[dt]||[]).push({t:'릴스',title:p.front['title']||p.name});});
-  (d.kits||[]).forEach(p=>{const dt=pickDate(p.front['발행일']);if(dt&&inRange(dt,R))(pub[dt]=pub[dt]||[]).push({t:'RE:KIT',title:p.front['콘텐츠명']||''});});
+  (d.reels||[]).forEach(p=>{const dt=pickDate(p.front['published']);if(dt){const k=iso(dt);if(inRange(k,R))(pub[k]=pub[k]||[]).push({t:'릴스',title:p.front['title']||p.name});}});
+  (d.kits||[]).forEach(p=>{const dt=pickDate(p.front['발행일']);if(dt){const k=iso(dt);if(inRange(k,R))(pub[k]=pub[k]||[]).push({t:'RE:KIT',title:p.front['콘텐츠명']||''});}});
   const toN=s=>{const x=s.split('-').map(Number);return Date.UTC(x[0],x[1]-1,x[2])/864e5;};
   const toD=n=>{const t=new Date(n*864e5);return `${t.getUTCFullYear()}-${String(t.getUTCMonth()+1).padStart(2,'0')}-${String(t.getUTCDate()).padStart(2,'0')}`;};
   const items=[];
