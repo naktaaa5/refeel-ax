@@ -229,6 +229,39 @@
   .ev:before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:3px;border-radius:2px;background:var(--mut)}
   .ev.consult:before{background:var(--accent)}.ev.kit:before{background:var(--green)}.ev.reel:before{background:#3f6fb0}
   .evmore{font-size:9.5px;color:var(--faint);padding-left:8px}
+  .calgrid.mini .calcell{min-height:64px}
+  .calleg .lg:before{content:"";width:9px;height:9px;border-radius:3px;background:var(--mut)}
+
+  /* 주간 캘린더 (전용 캘린더 뷰) */
+  .calviewtog{margin-left:auto;display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+  .calviewtog button{font:inherit;font-size:12px;font-weight:600;border:none;background:var(--card);color:var(--mut);padding:6px 14px;cursor:pointer}
+  .calviewtog button+button{border-left:1px solid var(--line2)}
+  .calviewtog button.on{background:var(--ink);color:#fff}
+  .calwk{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);margin-top:2px}
+  .wkrow{display:grid}
+  .wkcorner{border-bottom:1px solid var(--line2);background:var(--pill)}
+  .wkdh{padding:7px 4px 6px;text-align:center;border-left:1px solid var(--line);border-bottom:1px solid var(--line2);background:var(--pill)}
+  .wkdh .wd{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:700;display:block;margin-bottom:1px}
+  .wkdh .dn{font-size:15px;font-weight:700;color:var(--ink2)}
+  .wkdh.today .dn{color:#fff;background:var(--accent);border-radius:50%;width:25px;height:25px;line-height:25px;display:inline-block}
+  .wkall{font-size:9.5px;color:var(--faint);font-weight:700;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line2)}
+  .wkallcell{min-height:24px;border-left:1px solid var(--line);border-bottom:1px solid var(--line2);padding:3px;display:flex;flex-direction:column;gap:3px}
+  .wev{font-size:10.5px;line-height:1.3;padding:2px 7px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .wev.consult{background:#fdeae3;color:#c43e1c}.wev.kit{background:#e7f5ee;color:#15803d}.wev.reel{background:#e8eff7;color:#2f5e9e}
+  .wkbody{position:relative}
+  .wkhr{font-size:10px;color:var(--faint);text-align:right;padding:2px 7px 0 0;border-top:1px solid var(--line)}
+  .wkslot{border-left:1px solid var(--line);border-top:1px solid var(--line)}
+  .wblk{position:absolute;border-radius:7px;padding:3px 8px;font-size:11px;line-height:1.3;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);z-index:2}
+  .wblk b{font-weight:700;margin-right:3px}
+  .wblk.consult{background:#fdeae3;color:#c43e1c;border-left:3px solid var(--accent)}
+  .wblk.kit{background:#e7f5ee;color:#15803d;border-left:3px solid var(--green)}
+  .wblk.reel{background:#e8eff7;color:#2f5e9e;border-left:3px solid #3f6fb0}
+
+  /* 콘텐츠 상태 배지 + 필터 */
+  .cbadge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .cbadge.done{color:var(--green);background:#e7f5ee}
+  .cbadge.wait{color:#b06a00;background:#fdf3e0}
+  .cbadge .sc{font-weight:600;opacity:.8;margin-left:4px}
 
   /* 체크/입력/브랜드/마크다운 본문 */
   .ck{display:flex;gap:13px;align-items:flex-start;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -302,7 +335,6 @@
 
   <div class="navsec">메인</div>
   <div class="nav" data-v="home"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg> 개요</div>
-  <div class="nav" data-v="brand"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v10a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4Z"/><path d="M8 9h8M8 15h8"/></svg> 브랜드 코어</div>
   <div class="nav" data-v="read"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg> 콘텐츠</div>
   <div class="nav" data-v="reel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4"/></svg> 릴스</div>
 
@@ -601,14 +633,15 @@ function viewConsult(d){
   const rows=d.cases.map(p=>({...p,d:pickDate(p.front['세션일'])})).filter(p=>p.d).sort((a,b)=>b.d-a.d);
   let h=head('Consulting','컨설팅 케이스','1:1 세션과 케이스.');
   h+=wrapStats(stat(d.cases.length,'','전체 케이스',1)+stat(rows.filter(p=>p.d>=t).length,'건','예정'));
-  h+=padOpen+modeToggle('consult');
-  if(mode('consult')==='cal')return h+calRender(calEvents(d).filter(e=>e.kind==='consult'),'consult')+padClose;
-  h+=`<div class="sec">전체 세션 <span class="note">최근순</span></div><div class="rule"></div>`;
-  h+=rows.map(p=>{const stt=p.front['status']||p.front['진행상태']||'';const done=/완료/.test(stt);return `<div class="item clk" data-note="${esc(p.path)}" style="grid-template-columns:78px 1fr auto auto">
+  h+=padOpen+calMonthGrid(calEvents(d).filter(e=>e.kind==='consult'),'consult');
+  const s=calState('consult','month');let list=rows,note='최근순';
+  if(s.sel){const[yy,mm,dd]=s.sel.split('-').map(Number);list=rows.filter(p=>dkey(p.d)===s.sel);note=`📅 ${md(new Date(yy,mm,dd))} · <span data-clear="consult" style="color:var(--accent);cursor:pointer">전체보기</span>`;}
+  h+=`<div class="sec">세션 목록 <span class="note">${note}</span></div><div class="rule"></div>`;
+  h+=list.map(p=>{const stt=p.front['status']||p.front['진행상태']||'';const done=/완료/.test(stt);return `<div class="item clk" data-note="${esc(p.path)}" style="grid-template-columns:78px 1fr auto auto">
     <div class="d">${md(p.d)}<span class="dw">${dow(p.d)}</span></div>
     <div class="ti">${esc(p.front['이름']||'')}</div>
     <div class="mt">${esc(p.front['상품']||'')}${p.front['회차']?' · '+esc(p.front['회차'])+'회':''}</div>
-    <div class="st ${done?'on':''}">${esc(stt||'—')}</div></div>`;}).join('');
+    <div class="st ${done?'on':''}">${esc(stt||'—')}</div></div>`;}).join('')||'<div class="empty">이 날짜엔 세션이 없어요</div>';
   return h+padClose;
 }
 /* ═══════════════ RE:KIT ═══════════════ */
@@ -617,12 +650,13 @@ function viewKit(d){
   const cat=c=>d.kits.filter(p=>String(p.front['category']||'').toLowerCase()===c).length;
   let h=head('Content Library','RE:KIT','발행한 실행 가이드.');
   h+=wrapStats(stat(d.kits.length,'편','총 발행',1)+stat(cat('branding'),'','브랜딩')+stat(cat('marketing'),'','마케팅')+stat(cat('content'),'','콘텐츠'));
-  h+=padOpen+modeToggle('kit');
-  if(mode('kit')==='cal')return h+calRender(calEvents(d).filter(e=>e.kind==='kit'),'kit')+padClose;
-  h+=`<div class="sec">전체 목록 <span class="note">번호순</span></div><div class="rule"></div>`;
-  h+=rows.map(p=>`<div class="item clk" data-note="${esc(p.path)}" style="grid-template-columns:42px 1fr auto">
+  h+=padOpen+calMonthGrid(calEvents(d).filter(e=>e.kind==='kit'),'kit');
+  const s=calState('kit','month');let list=rows,note='번호순';
+  if(s.sel){const[yy,mm,dd]=s.sel.split('-').map(Number);list=rows.filter(p=>{const dt=pickDate(p.front['발행일']);return dt&&dkey(dt)===s.sel;});note=`📅 ${md(new Date(yy,mm,dd))} · <span data-clear="kit" style="color:var(--accent);cursor:pointer">전체보기</span>`;}
+  h+=`<div class="sec">발행 목록 <span class="note">${note}</span></div><div class="rule"></div>`;
+  h+=list.map(p=>`<div class="item clk" data-note="${esc(p.path)}" style="grid-template-columns:42px 1fr auto">
     <div class="idx">${esc(p.front['번호'])}</div><div class="ti">${esc(p.front['콘텐츠명']||'')}</div>
-    <div class="mt">${esc(p.front['category']||'')}</div></div>`).join('');
+    <div class="mt">${esc(p.front['category']||'')}</div></div>`).join('')||'<div class="empty">이 날짜엔 발행이 없어요</div>';
   return h+padClose;
 }
 /* ═══════════════ 릴스 ═══════════════ */
@@ -649,15 +683,18 @@ function viewReel(d){
   const avgER=n?rows.reduce((a,r)=>a+r.er,0)/n:0;
   let h=head('Performance','릴스','조회수는 표면 — 저장·댓글·도달·ER로 ‘깊은 콘텐츠’를 본다.');
   h+=wrapStats(stat(n,'','릴스',1)+stat(num(tot),'','총 조회수')+stat(avgER.toFixed(1),'%','평균 ER')+stat(num(totSave),'','총 저장'));
-  h+=padOpen+modeToggle('reel');
-  if(mode('reel')==='cal')return h+calRender(calEvents(d).filter(e=>e.kind==='reel'),'reel')+padClose;
-  const sk=REELSORT[state.reelSort]?state.reelSort:'er', S=REELSORT[sk];
-  h+=`<div class="sortbar"><span class="sortlbl">정렬</span>${Object.keys(REELSORT).map(k=>`<button class="chip ${k===sk?'on':''}" data-sort="${k}">${REELSORT[k].l}</button>`).join('')}</div>`;
+  h+=padOpen+calMonthGrid(calEvents(d).filter(e=>e.kind==='reel'),'reel');
   if(!n)return h+'<div class="empty">릴스 데이터 없음</div>'+padClose;
-  const sorted=rows.slice().sort((a,b)=>S.f(b)-S.f(a));
+  const s=calState('reel','month');let list=rows;
+  if(s.sel){const allow=new Set((d.reels||[]).filter(p=>{const dt=pickDate(p.front['published']);return dt&&dkey(dt)===s.sel;}).map(p=>p.path));list=rows.filter(r=>allow.has(r.path));}
+  const sk=REELSORT[state.reelSort]?state.reelSort:'er', S=REELSORT[sk];
+  if(!s.sel)h+=`<div class="sortbar"><span class="sortlbl">정렬</span>${Object.keys(REELSORT).map(k=>`<button class="chip ${k===sk?'on':''}" data-sort="${k}">${REELSORT[k].l}</button>`).join('')}</div>`;
+  const sorted=list.slice().sort((a,b)=>S.f(b)-S.f(a));
   const mx=Math.max(1,...sorted.map(S.f));
   const cell=(active,label,val)=>`<span class="${active?'hl':''}">${label} ${val}</span>`;
-  h+=`<div class="sec">${S.l} 순 <span class="note">${n}편</span></div><div class="rule"></div>`;
+  if(s.sel){const[yy,mm,dd]=s.sel.split('-').map(Number);h+=`<div class="sec">📅 ${md(new Date(yy,mm,dd))} 발행 <span class="note">${sorted.length}편 · <span data-clear="reel" style="color:var(--accent);cursor:pointer">전체보기</span></span></div><div class="rule"></div>`;}
+  else h+=`<div class="sec">${S.l} 순 <span class="note">${n}편</span></div><div class="rule"></div>`;
+  if(!sorted.length)return h+'<div class="empty">이 날짜엔 발행이 없어요</div>'+padClose;
   h+=sorted.map(r=>`<div class="reelitem clk" data-note="${esc(r.path)}">
     <div class="rtop"><span class="nm">${esc(r.title)}</span>${r.pat?`<span class="pill ${patCls(r.pat)}">${esc(r.pat)}</span>`:''}</div>
     <div class="met">
@@ -685,58 +722,101 @@ function calEvents(d){
   return ev;
 }
 const order=e=>({consult:0,kit:1,reel:2}[e.kind]);
-function calRender(events,ns){
-  state.cal=state.cal||{};
-  const s=state.cal[ns]=state.cal[ns]||{month:monthStart(today()),sel:undefined};
-  const base=s.month, y=base.getFullYear(), m=base.getMonth(), t=today();
+const KCOL={consult:'var(--accent)',kit:'var(--green)',reel:'#3f6fb0'};
+/* 세션시각 등에서 시(hour) 추출: "14:00" / "오후 2시 30분" / "20시" → 소수시간(없으면 null) */
+function parseHM(s){s=String(s||'');let m=s.match(/(\d{1,2}):(\d{2})/);if(m)return +m[1]+(+m[2])/60;
+  m=s.match(/(오전|오후)?\s*(\d{1,2})\s*시\s*(?:(반)|(\d{1,2})\s*분)?/);
+  if(m){let h=+m[2];if(m[1]==='오후'&&h<12)h+=12;if(m[1]==='오전'&&h===12)h=0;const mn=m[3]?30:(m[4]?+m[4]:0);return h+mn/60;}return null;}
+const fmtH=h=>((h%12)||12)+(h<12?' AM':' PM');
+function mondayOf(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+function dayStart(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+function calState(ns,defMode){state.cal=state.cal||{};return state.cal[ns]=state.cal[ns]||{mode:defMode||'week',anchor:today(),sel:undefined};}
+const calLegend=events=>`<div class="calleg">${Object.keys(KIND).filter(k=>events.some(e=>e.kind===k)).map(k=>`<span class="lg ${k}">${KIND[k].c}</span>`).join('')}</div>`;
+const calViewTog=(ns,m)=>`<div class="calviewtog">${[['day','Day'],['week','Week'],['month','Month']].map(([v,l])=>`<button data-calview="${v}" data-ns="${ns}" class="${m===v?'on':''}">${l}</button>`).join('')}</div>`;
+
+/* ── 월 그리드 (그리드만 — 섹션 대시보드·전용 캘린더 Month) ── */
+function calMonthGrid(events,ns,viewTog){
+  const s=calState(ns,'month');
+  const base=monthStart(s.anchor||today()), y=base.getFullYear(), m=base.getMonth(), t=today();
   const byDay={};events.forEach(e=>{(byDay[dkey(e.date)]=byDay[dkey(e.date)]||[]).push(e);});
-  let sel=s.sel;
-  if(sel===undefined&&t.getFullYear()===y&&t.getMonth()===m)sel=dkey(t);
   const start=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
-  const kinds=Object.keys(KIND).filter(k=>events.some(e=>e.kind===k));
-  const cnt=k=>Object.keys(byDay).filter(x=>x.startsWith(y+'-'+m+'-')).reduce((a,x)=>a+byDay[x].filter(e=>e.kind===k).length,0);
   let h=`<div class="calhead">
     <div class="calnav"><button data-cal="prev" data-ns="${ns}">‹</button><button data-cal="today" data-ns="${ns}">오늘</button><button data-cal="next" data-ns="${ns}">›</button></div>
-    <div class="calmon">${y}년 ${m+1}월</div>
-    <div class="calleg">${kinds.map(k=>`<span class="lg ${k}">${KIND[k].c} ${cnt(k)}</span>`).join('')}</div>
-  </div><div class="calgrid">`;
+    <div class="calmon">${y}.${String(m+1).padStart(2,'0')}</div>${viewTog?calViewTog(ns,'month'):calLegend(events)}</div><div class="calgrid mini">`;
   '일월화수목금토'.split('').forEach(w=>h+=`<div class="caldow">${w}</div>`);
   const prevDays=new Date(y,m,0).getDate();
   for(let i=0;i<start;i++)h+=`<div class="calcell out"><div class="cn">${prevDays-start+1+i}</div></div>`;
   for(let day=1;day<=days;day++){
     const cd=new Date(y,m,day), k=dkey(cd), list=(byDay[k]||[]).sort((a,b)=>order(a)-order(b));
-    h+=`<div class="calcell ${cd.getTime()===t.getTime()?'today':''} ${sel===k?'sel':''}" data-day="${k}" data-ns="${ns}"><div class="cn">${day}</div>`;
+    h+=`<div class="calcell ${cd.getTime()===t.getTime()?'today':''} ${s.sel===k?'sel':''}" data-day="${k}" data-ns="${ns}"><div class="cn">${day}</div>`;
     list.slice(0,3).forEach(e=>h+=`<div class="ev ${e.kind}">${esc(e.label)}</div>`);
     if(list.length>3)h+=`<div class="evmore">+${list.length-3}</div>`;
     h+=`</div>`;
   }
   const trail=(7-(start+days)%7)%7;
   for(let i=1;i<=trail;i++)h+=`<div class="calcell out"><div class="cn">${i}</div></div>`;
-  h+=`</div>`;
-  if(sel&&byDay[sel]){
-    const[yy,mm,dd]=sel.split('-').map(Number), sd=new Date(yy,mm,dd);
-    h+=`<div class="sec">${md(sd)} <span class="note">${dow(sd)}요일 · ${byDay[sel].length}건</span></div><div class="rule"></div>`;
-    h+=byDay[sel].sort((a,b)=>order(a)-order(b)).map(e=>`<div class="item clk" data-note="${esc(e.path||'')}" style="grid-template-columns:64px 1fr auto">
-      <div class="st ${/완료/.test(e.meta)?'on':''}">${KIND[e.kind].c}</div>
-      <div class="ti">${esc(e.label)} <span class="mt" style="font-weight:400">${esc(e.sub)}</span></div>
-      <div class="mt">${esc(e.extra||e.meta||'')}</div></div>`).join('');
-  }else h+=`<div class="empty" style="padding:26px 0">날짜를 클릭하면 그날 일정이 여기 표시돼요</div>`;
-  return h;
+  return h+`</div>`;
+}
+
+/* ── 주간/일 그리드 (전용 캘린더 — 시간축 + 종일띠, dashboad_cal1 스타일) ── */
+function calWeek(events,ns){
+  const s=calState(ns,'week'), t=today();
+  const ndays=s.mode==='day'?1:7;
+  const start=s.mode==='day'?dayStart(s.anchor||today()):mondayOf(s.anchor||today());
+  const cols=[];for(let i=0;i<ndays;i++){const c=new Date(start);c.setDate(start.getDate()+i);cols.push(c);}
+  const timed=[], allday=cols.map(()=>[]);
+  cols.forEach((c,ci)=>{const k=dkey(c);events.filter(e=>dkey(e.date)===k).sort((a,b)=>order(a)-order(b)).forEach(e=>{const hm=e.kind==='consult'?parseHM(e.extra):null;if(hm!=null&&hm>=0&&hm<24)timed.push({e,ci,hm});else allday[ci].push(e);});});
+  let minH=9,maxH=18;timed.forEach(x=>{minH=Math.min(minH,Math.floor(x.hm));maxH=Math.max(maxH,Math.ceil(x.hm+1));});
+  minH=Math.max(0,Math.min(minH,9));maxH=Math.min(24,Math.max(maxH,18));
+  const hours=[];for(let hh=minH;hh<maxH;hh++)hours.push(hh);
+  const ROW=52, tpl=`grid-template-columns:54px repeat(${ndays},1fr)`;
+  const range=ndays===1?`${start.getFullYear()}. ${md(start)} (${dow(start)})`:`${md(cols[0])} – ${md(cols[6])}, ${cols[0].getFullYear()}`;
+  let h=`<div class="calhead">
+    <div class="calnav"><button data-cal="prev" data-ns="${ns}">‹</button><button data-cal="today" data-ns="${ns}">오늘</button><button data-cal="next" data-ns="${ns}">›</button></div>
+    <div class="calmon">${range}</div>
+    ${calViewTog(ns,s.mode)}
+  </div><div class="calwk">`;
+  h+=`<div class="wkrow" style="${tpl}"><div class="wkcorner"></div>`+cols.map(c=>`<div class="wkdh ${c.getTime()===t.getTime()?'today':''}"><span class="wd">${'일월화수목금토'[c.getDay()]}</span><span class="dn">${c.getDate()}</span></div>`).join('')+`</div>`;
+  h+=`<div class="wkrow" style="${tpl}"><div class="wkall">종일</div>`+allday.map(arr=>`<div class="wkallcell">`+arr.map(e=>`<div class="wev ${e.kind} clk" data-note="${esc(e.path||'')}">${esc(e.label)}</div>`).join('')+`</div>`).join('')+`</div>`;
+  h+=`<div class="wkrow wkbody" style="${tpl}">`;
+  hours.forEach(hh=>{h+=`<div class="wkhr">${fmtH(hh)}</div>`+cols.map(()=>`<div class="wkslot" style="height:${ROW}px"></div>`).join('');});
+  timed.forEach(x=>{const top=(x.hm-minH)*ROW+2;const left=`calc(54px + (100% - 54px) * ${x.ci} / ${ndays} + 3px)`;const wid=`calc((100% - 54px) / ${ndays} - 8px)`;
+    h+=`<div class="wblk ${x.e.kind} clk" data-note="${esc(x.e.path||'')}" style="top:${top}px;left:${left};width:${wid};height:${ROW-6}px"><b>${fmtH(Math.floor(x.hm))}</b>${esc(x.e.label)}</div>`;});
+  return h+`</div></div>`;
+}
+
+/* ── 캘린더 하단 일정 리스트 (전용 캘린더) ── */
+function calList(events,ns){
+  const s=calState(ns,'week');let evs,lbl;
+  if(s.mode==='month'){const base=monthStart(s.anchor||today());
+    if(s.sel){const[yy,mm,dd]=s.sel.split('-').map(Number);evs=events.filter(e=>dkey(e.date)===s.sel);lbl=`${md(new Date(yy,mm,dd))} 일정`;}
+    else{evs=events.filter(e=>e.date.getFullYear()===base.getFullYear()&&e.date.getMonth()===base.getMonth());lbl='이번 달 일정';}}
+  else{const st=s.mode==='day'?dayStart(s.anchor||today()):mondayOf(s.anchor||today());const en=new Date(st);en.setDate(st.getDate()+(s.mode==='day'?1:7));evs=events.filter(e=>e.date>=st&&e.date<en);lbl=s.mode==='day'?'이 날 일정':'이번 주 일정';}
+  evs=evs.slice().sort((a,b)=>a.date-b.date||order(a)-order(b));
+  let h=`<div class="sec">${lbl} <span class="note">${evs.length}건</span></div><div class="rule"></div>`;
+  if(!evs.length)return h+`<div class="empty" style="padding:22px 0">이 기간엔 일정이 없어요</div>`;
+  return h+evs.map(e=>`<div class="item clk" data-note="${esc(e.path||'')}" style="grid-template-columns:74px 60px 1fr auto">
+    <div class="d">${md(e.date)}<span class="dw">${dow(e.date)}</span></div>
+    <div class="st" style="text-align:left;color:${KCOL[e.kind]}">${KIND[e.kind].c}</div>
+    <div class="ti">${esc(e.label)} <span class="mt" style="font-weight:400">${esc(e.sub||'')}</span></div>
+    <div class="mt">${esc(e.extra||'')}</div></div>`).join('');
 }
 function wireCalNs(){
   main.querySelectorAll('[data-cal]').forEach(b=>b.onclick=()=>{
-    const s=state.cal[b.dataset.ns], a=b.dataset.cal, base=s.month;
-    if(a==='prev')s.month=new Date(base.getFullYear(),base.getMonth()-1,1);
-    else if(a==='next')s.month=new Date(base.getFullYear(),base.getMonth()+1,1);
-    else{s.month=monthStart(today());s.sel=dkey(today());}
+    const s=state.cal[b.dataset.ns], a=b.dataset.cal;
+    if(a==='today'){s.anchor=today();s.sel=undefined;}
+    else{const dir=a==='prev'?-1:1;const x=new Date(s.anchor||today());if(s.mode==='month')x.setMonth(x.getMonth()+dir);else x.setDate(x.getDate()+dir*(s.mode==='day'?1:7));s.anchor=x;}
     renderView();
   });
   main.querySelectorAll('[data-day]').forEach(c=>c.onclick=()=>{const s=state.cal[c.dataset.ns];s.sel=s.sel===c.dataset.day?null:c.dataset.day;renderView();});
+  main.querySelectorAll('[data-calview]').forEach(b=>b.onclick=()=>{const s=state.cal[b.dataset.ns];s.mode=b.dataset.calview;s.sel=undefined;renderView();});
+  main.querySelectorAll('[data-clear]').forEach(el=>el.onclick=()=>{const s=state.cal[el.dataset.clear];if(s)s.sel=null;renderView();});
 }
-const mode=ns=>((state.mode=state.mode||{}),state.mode[ns]||'list');
-const modeToggle=ns=>`<div class="modetog"><button data-mode="${ns}:list" class="${mode(ns)==='list'?'on':''}">리스트</button><button data-mode="${ns}:cal" class="${mode(ns)==='cal'?'on':''}">캘린더</button></div>`;
-function wireMode(){main.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const[ns,v]=b.dataset.mode.split(':');state.mode=state.mode||{};state.mode[ns]=v;renderView();});}
-const viewCal=d=>head('Calendar','캘린더','세션·발행·릴스를 한 달 위에서 한눈에.')+padOpen+calRender(calEvents(d),'all')+padClose;
+function viewCal(d){
+  const ev=calEvents(d), s=calState('all','week');
+  const grid=s.mode==='month'?calMonthGrid(ev,'all',true):calWeek(ev,'all');
+  return head('Calendar','캘린더','세션·발행·릴스를 한눈에 — 주간 시간표.')+padOpen+grid+calList(ev,'all')+padClose;
+}
 
 /* ═══════════════ 재윤 OS ═══════════════ */
 const JY=['이해부터, 그다음 수집 — 넣기 전 "내 말 한 줄"','데이터와 인터페이스를 분리','만들기 전 GitHub부터 (찾아 튜닝)','모델보다 하네스를 의심','논술형 회상으로 이해 점검','클로드 코드를 손에 익힌다'];
@@ -764,12 +844,18 @@ function viewRead(){
   if(!list.length)return h+padOpen+`<div class="empty">수집 콘텐츠 없음 — 20_지식노트/영상백필 확인</div>`+padClose;
   const sel=state.readSel&&list.find(x=>x.name===state.readSel);
   if(!sel){
+    const isDone=x=>/## 🎬 큐레이션 요약/.test(x.raw), hasScr=x=>/## 📄 전체 스크립트/.test(x.raw);
     const memoed=list.filter(x=>/## 📌 내 메모/.test(x.raw)).length;
-    h+=wrapStats(stat(list.length,'','수집 영상',1)+stat(memoed,'','메모함'));
+    const done=list.filter(isDone).length, wait=list.length-done;
+    h+=wrapStats(stat(list.length,'','수집 영상',1)+stat(done,'','요약 완료')+stat(wait,'','대기')+stat(memoed,'','메모함'));
     h+=padOpen;
     h+=`<div style="display:flex;gap:8px;margin:8px 0 4px"><input type="text" id="rdUrl" placeholder="유튜브 링크 붙여넣기 → 블로그 요약 (한 개씩)" style="flex:1"><button class="act" id="rdAdd" style="margin-top:0;white-space:nowrap">＋ 요약 추가</button></div><div id="rdAddMsg" class="mt" style="margin-bottom:10px"></div>`;
+    const flt=state.readFilter||'all';
+    h+=`<div class="sortbar"><span class="sortlbl">상태</span>${[['all','전체',list.length],['done','✓ 요약 완료',done],['wait','· 대기',wait]].map(([k,l,c])=>`<button class="chip ${k===flt?'on':''}" data-rfilter="${k}">${l} ${c}</button>`).join('')}</div>`;
+    const shown=list.filter(x=>flt==='all'||(flt==='done'?isDone(x):!isDone(x)));
     h+=`<div class="sec">목록 <span class="note">클릭해서 읽기</span></div><div class="rule"></div>`;
-    for(const x of list){const m=/## 📌 내 메모/.test(x.raw);const vid=((x.front['source']||'').match(/watch\?v=([A-Za-z0-9_-]+)/)||[])[1];h+=`<div class="item clk" data-read="${esc(x.name)}" style="grid-template-columns:104px 1fr auto;align-items:center;gap:14px;cursor:pointer">${vid?`<img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" loading="lazy" style="width:104px;height:59px;object-fit:cover;border-radius:8px;background:#eee;display:block">`:'<div style="width:104px;height:59px;background:var(--pill);border-radius:8px"></div>'}<div style="min-width:0"><div class="ti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.front['title']||x.name.replace('.md',''))}</div><div class="mt" style="margin-top:3px">${esc((x.front['source']||'').split('/')[0].trim().slice(0,42))} · 관련성 ${esc(x.front['score_관련성']||'-')}</div></div><div class="mt" style="text-align:right;white-space:nowrap">${m?'📌 ':''}${esc(x.front['output']||'')}</div></div>`;}
+    if(!shown.length)h+=`<div class="empty">해당 상태의 콘텐츠가 없어요</div>`;
+    for(const x of shown){const dn=isDone(x),sc=hasScr(x),m=/## 📌 내 메모/.test(x.raw);const vid=((x.front['source']||'').match(/watch\?v=([A-Za-z0-9_-]+)/)||[])[1];h+=`<div class="item clk" data-read="${esc(x.name)}" style="grid-template-columns:104px 1fr auto;align-items:center;gap:14px;cursor:pointer">${vid?`<img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" loading="lazy" style="width:104px;height:59px;object-fit:cover;border-radius:8px;background:#eee;display:block">`:'<div style="width:104px;height:59px;background:var(--pill);border-radius:8px"></div>'}<div style="min-width:0"><div class="ti" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.front['title']||x.name.replace('.md',''))}</div><div class="mt" style="margin-top:3px">${esc((x.front['source']||'').split('/')[0].trim().slice(0,42))} · 관련성 ${esc(x.front['score_관련성']||'-')}</div></div><div style="text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="cbadge ${dn?'done':'wait'}">${dn?'요약 완료':'요약 대기'}${sc?'<span class="sc">📄 번역</span>':''}</span>${m||x.front['output']?`<span class="mt">${m?'📌 ':''}${esc(x.front['output']||'')}</span>`:''}</div></div>`;}
     return h+padClose;
   }
   const c=sel;const src=c.front['source']||'';const url=(src.match(/https?:\/\/\S+/)||[''])[0];
@@ -793,13 +879,14 @@ function viewRead(){
   return h+padClose;
 }
 function wireRead(){
-  main.querySelectorAll('[data-read]').forEach(el=>el.onclick=()=>{state.readSel=el.dataset.read;state.readScript=false;renderView();});
+  main.querySelectorAll('[data-read]').forEach(el=>el.onclick=()=>{state.readScript=false;nav({readSel:el.dataset.read});});
+  main.querySelectorAll('[data-rfilter]').forEach(b=>b.onclick=()=>{state.readFilter=b.dataset.rfilter;renderView();});
   const genVid=c=>((c.front['source']||'').match(/(?:v=|youtu\.be\/|shorts\/)([A-Za-z0-9_-]{6,})/)||[])[1];
   const gen=async(endpoint,label,after)=>{const c=(state.content||[]).find(x=>x.name===state.readSel);if(!c)return;const vid=genVid(c);const msg=$('#rdGenMsg');if(!vid){if(msg)msg.textContent='이 노트에 유튜브 링크가 없어';return;}if(msg)msg.innerHTML='⏳ '+label+'… (1~2분, 기다려줘)';try{const r=await fetch(api(endpoint),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:'https://youtu.be/'+vid,file:c.name})});const j=await r.json();if(j.ok){state.content=await readContent(state.root);if(after)after();renderView();}else if(msg)msg.innerHTML='<span style="color:var(--accent)">실패: '+esc(j.msg||'')+'</span>';}catch(e){if(msg)msg.innerHTML='<span style="color:var(--accent)">연결 실패: '+esc(e.message)+'</span>';}};
   const gsum=$('#rdSum');if(gsum)gsum.onclick=()=>gen('/summarize','블로그 요약 생성');
   const gscr=$('#rdScript');if(gscr)gscr.onclick=()=>{const c=(state.content||[]).find(x=>x.name===state.readSel);if(c&&/## 📄 전체 스크립트/.test(c.raw)){state.readScript=!state.readScript;renderView();}else gen('/transcript','전체 스크립트 가져오기',()=>{state.readScript=true;});};
   const add=$('#rdAdd');if(add)add.onclick=async()=>{const url=($('#rdUrl')||{}).value||'';const msg=$('#rdAddMsg');if(!url.trim()){if(msg)msg.textContent='링크를 붙여넣어줘';return;}if(msg)msg.innerHTML='🎬 자막 가져와 블로그 요약 중… (1~2분, 기다려줘)';add.disabled=true;try{const r=await fetch(api('/summarize'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});const j=await r.json();if(j.ok){state.content=await readContent(state.root);state.readSel=null;renderView();}else if(msg)msg.innerHTML='<span style="color:var(--accent)">실패: '+esc(j.msg||'')+'</span>';}catch(e){if(msg)msg.innerHTML='<span style="color:var(--accent)">연결 실패: '+esc(e.message)+'</span>';}add.disabled=false;};
-  const b=$('#rdBack');if(b)b.onclick=()=>{state.readSel=null;renderView();};
+  const b=$('#rdBack');if(b)b.onclick=()=>history.back();
   const s=$('#rdSave');if(s)s.onclick=async()=>{const c=(state.content||[]).find(x=>x.name===state.readSel);if(!c)return;if(!state.writable){$('#rdMsg').textContent=' 쓰기권한 필요(볼트 편집 허용)';return;}try{await saveMemo(c,($('#rdReason')||{}).value||'',($('#rdOut')||{}).value||'');$('#rdMsg').innerHTML=' <span style="color:var(--green)">✓ 볼트에 저장됨</span>';}catch(e){$('#rdMsg').textContent=' 실패: '+e.message;}};
 }
 /* ── 노트 드로어 + 옵시디언 딥링크 ── */
@@ -840,7 +927,7 @@ async function openNote(path){
   const body=cardBody(raw);
   o.querySelector('.ovbody').innerHTML=body?mdLite(body):'<div class="empty" style="padding:24px 0">본문 없음</div>';
 }
-function wireNotes(){main.querySelectorAll('[data-note]').forEach(el=>el.onclick=ev=>{ev.stopPropagation();openNote(el.dataset.note);});}
+function wireNotes(){main.querySelectorAll('[data-note]').forEach(el=>el.onclick=ev=>{ev.stopPropagation();if(el.dataset.note)nav({ovPath:el.dataset.note});});}
 
 /* ═══════════════ 브랜드 코어 ═══════════════ */
 const BRAND_FILES=[{key:'voice',file:'브랜드 보이스 DNA.md',label:'브랜드 보이스 DNA'},{key:'core',file:'00_핵심맥락.md',label:'핵심 맥락'}];
@@ -1147,7 +1234,7 @@ function viewExec(){
 }
 
 /* ═══════════════ 라우팅 ═══════════════ */
-const VIEWS={brand:viewBrand,home:viewHome,consult:viewConsult,crm:viewCRM,kit:viewKit,reel:viewReel,cal:viewCal,queue:viewQueue,acct:viewAcct,revc:viewRevContent,exec:viewExec,jaeyun:viewJaeyun,capture:viewCapture,learn:viewLearn,read:viewRead,lint:viewLint,ai:viewAi};
+const VIEWS={home:viewHome,consult:viewConsult,crm:viewCRM,kit:viewKit,reel:viewReel,cal:viewCal,queue:viewQueue,acct:viewAcct,revc:viewRevContent,exec:viewExec,jaeyun:viewJaeyun,capture:viewCapture,learn:viewLearn,read:viewRead,lint:viewLint,ai:viewAi};
 const STATIC=['acct','revc','exec','jaeyun','capture','learn','read','ai'];
 function renderView(){
   document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.v===state.view));
@@ -1161,14 +1248,14 @@ function renderView(){
   if(state.view==='learn')wireLearn();
   if(state.view==='acct'||state.view==='revc')wirePeriod();
   if(state.view==='read')wireRead();
-  if(['cal','consult','kit','reel'].includes(state.view)){wireMode();wireCalNs();}
+  if(['cal','consult','kit','reel'].includes(state.view))wireCalNs();
   if(state.view==='reel')wireReelSort();
   if(state.view==='lint')wireLint();
   wireNotes();
 }
 function wireLearn(){
-  main.querySelectorAll('[data-pick]').forEach(el=>el.onclick=()=>{state.learnSel=el.dataset.pick;state.learnAnswer='';state.learnRevealed=false;state.learnFeedback='';state.learnGrading=false;renderView();});
-  const back=$('#lrBack');if(back)back.onclick=()=>{state.learnSel=null;state.learnAnswer='';state.learnRevealed=false;state.learnFeedback='';renderView();};
+  main.querySelectorAll('[data-pick]').forEach(el=>el.onclick=()=>{state.learnAnswer='';state.learnRevealed=false;state.learnFeedback='';state.learnGrading=false;nav({learnSel:el.dataset.pick});});
+  const back=$('#lrBack');if(back)back.onclick=()=>{state.learnAnswer='';state.learnRevealed=false;state.learnFeedback='';history.back();};
   const s=$('#lrShow');if(s)s.onclick=()=>{state.learnAnswer=($('#lrA')||{}).value||'';state.learnRevealed=true;renderView();};
   const gr=$('#lrGrade');if(gr)gr.onclick=async()=>{
     state.learnAnswer=($('#lrA')||{}).value||'';state.learnGrading=true;state.learnFeedback='';renderView();
@@ -1217,16 +1304,31 @@ async function connect(handle){
   $('#vstat').innerHTML=state.writable?'볼트 연결됨 · 읽기 + 쓰기':'볼트 연결됨 · 읽기만';
   $('#reload').style.display='';
   main.innerHTML='<div class="gate"><div class="empty">볼트 읽는 중…</div></div>';
-  state.data=await loadData(handle);state.cards=await readCards(handle);state.acct=await readAcct(handle);state.content=await readContent(handle);renderView();
+  state.data=await loadData(handle);state.cards=await readCards(handle);state.acct=await readAcct(handle);state.content=await readContent(handle);applyCurrent();history.replaceState(curScene(),'');
 }
 $('#pick').onclick=async()=>{
   if(state.saved){try{await connect(state.saved);return;}catch(e){}}
   if(!window.showDirectoryPicker){main.innerHTML='<div class="gate"><div class="warn">이 페이지에선 폴더 열기가 안 돼요.<br>① 크롬·엣지인지 ② 주소가 <code>http://localhost</code>인지 확인 (file:// 은 막힘).</div></div>';return;}
   try{await connect(await window.showDirectoryPicker());}catch(e){if(e.name!=='AbortError')main.innerHTML='<div class="gate"><div class="warn">'+esc(e.message||e.name)+'<br><span style="color:var(--mut);font-size:12px">file:// 이면 localhost로 열어야 해요.</span></div></div>';}};
 $('#reload').onclick=async()=>{if(state.root){state.data=await loadData(state.root);state.cards=await readCards(state.root);state.acct=await readAcct(state.root);state.content=await readContent(state.root);state.learnQueue=undefined;state.exec=undefined;renderView();}};
-document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{state.view=n.dataset.v;renderView();});
-$('#ov').querySelectorAll('[data-close]').forEach(e=>e.onclick=closeOverlay);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOverlay();closeSettings();}});
+/* ═══════════════ 히스토리(브라우저 뒤로가기) ═══════════════ */
+function curScene(){return {v:state.view,r:state.readSel||null,l:state.learnSel||null,o:state.ovPath||null};}
+function applyCurrent(){
+  renderView();
+  if(state.ovPath){if(state._ovOpen!==state.ovPath){state._ovOpen=state.ovPath;openNote(state.ovPath);}}
+  else if(state._ovOpen){state._ovOpen=null;closeOverlay();}
+}
+function nav(patch){
+  if('view' in patch)state.view=patch.view;
+  if('readSel' in patch)state.readSel=patch.readSel;
+  if('learnSel' in patch)state.learnSel=patch.learnSel;
+  if('ovPath' in patch)state.ovPath=patch.ovPath;
+  history.pushState(curScene(),'');applyCurrent();
+}
+window.addEventListener('popstate',e=>{const s=e.state||{v:'home',r:null,l:null,o:null};state.view=s.v;state.readSel=s.r;state.learnSel=s.l;state.ovPath=s.o;applyCurrent();});
+document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>nav({view:n.dataset.v,readSel:null,learnSel:null,ovPath:null}));
+$('#ov').querySelectorAll('[data-close]').forEach(e=>e.onclick=()=>{if(state.ovPath)history.back();else closeOverlay();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(state.ovPath)history.back();closeSettings();}});
 // 사이드바 검색 → 나브 필터
 $('#navSearch').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.nav').forEach(n=>{n.style.display=q&&!n.textContent.toLowerCase().includes(q)?'none':'';});};
 (async()=>{const h=await loadHandle();if(!h)return;state.saved=h;
