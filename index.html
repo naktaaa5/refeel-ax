@@ -803,7 +803,7 @@ function calWeek(events,ns){
   h+=`<div class="wkrow wkbody" style="${tpl}">`;
   hours.forEach(hh=>{h+=`<div class="wkhr">${fmtH(hh)}</div>`+cols.map(()=>`<div class="wkslot" style="height:${ROW}px"></div>`).join('');});
   timed.forEach(x=>{const top=(x.hm-minH)*ROW+2;const left=`calc(54px + (100% - 54px) * ${x.ci} / ${ndays} + 3px)`;const wid=`calc((100% - 54px) / ${ndays} - 8px)`;
-    h+=`<div class="wblk ${x.e.kind} clk" data-note="${esc(x.e.path||'')}" style="top:${top}px;left:${left};width:${wid};height:${ROW-6}px"><b>${fmtH(Math.floor(x.hm))}</b>${esc(x.e.label)}</div>`;});
+    h+=`<div class="wblk ${x.e.kind} clk" data-note="${esc(x.e.path||'')}" style="top:${top}px;left:${left};width:${wid};height:${ROW-6}px">${esc(x.e.label)}</div>`;});
   return h+`</div></div>`;
 }
 
@@ -889,7 +889,6 @@ function viewRead(){
   }
   const c=sel;const src=c.front['source']||'';const url=(src.match(/https?:\/\/\S+/)||[''])[0];
   h+=padOpen;
-  h+=`<div style="margin:6px 0 14px"><button class="act" id="rdBack" style="background:transparent;color:var(--mut);border:1px solid var(--line2);margin-top:0;padding:7px 14px">← 목록</button></div>`;
   const vid=((c.front['source']||'').match(/watch\?v=([A-Za-z0-9_-]+)/)||[])[1];
   const _b=c.body||'';
   // 전체 스크립트 섹션만 떼어내고(있으면), 나머지(요약 전체)를 블로그 본문으로 렌더.
@@ -912,7 +911,7 @@ function viewRead(){
   else h+=`<div class="postempty">아직 요약이 없어요 — 아래 「블로그 요약 생성」을 눌러줘.</div>`;
   h+=`</article>`;
   // 액션: 요약 생성(없을 때) + 전체 스크립트는 원문이 노트에 있을 때만 토글(없으면 버튼 자체를 숨겨 서버호출 에러 방지).
-  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 4px">${hasSum?'':`<button class="act" id="rdSum" style="margin-top:0">📝 블로그 요약 생성</button>`}${trText?`<button class="act" id="rdScript" style="margin-top:0;background:transparent;color:var(--ink);border:1px solid var(--line2)">📄 ${state.readScript?'전체 스크립트 접기':'전체 스크립트 보기'}</button>`:''}</div><div id="rdGenMsg" class="mt" style="margin-bottom:8px"></div>`;
+  h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 4px">${hasSum?'':`<button class="act" id="rdSum" style="margin-top:0">📝 블로그 요약 생성</button>`}<button class="act" id="rdScript" style="margin-top:0;background:transparent;color:var(--ink);border:1px solid var(--line2)">📄 ${trText?(state.readScript?'전체 스크립트 접기':'전체 스크립트 보기'):'전체 스크립트 가져오기'}</button></div><div id="rdGenMsg" class="mt" style="margin-bottom:8px"></div>`;
   if(state.readScript&&trText)h+=`<div class="transcript">${esc(trText)}</div>`;
   h+=`<div class="sec">📌 내 메모 <span class="note">이게 카드 재료가 돼</span></div><div class="rule"></div>`;
   h+=`<input type="text" id="rdReason" class="ph" placeholder="이유 — 왜 좋았나?" value="${esc(reasonOf(c))}">`;
@@ -926,9 +925,18 @@ function wireRead(){
   const genVid=c=>((c.front['source']||'').match(/(?:v=|youtu\.be\/|shorts\/)([A-Za-z0-9_-]{6,})/)||[])[1];
   const gen=async(endpoint,label,after)=>{const c=(state.content||[]).find(x=>x.name===state.readSel);if(!c)return;const vid=genVid(c);const msg=$('#rdGenMsg');if(!vid){if(msg)msg.textContent='이 노트에 유튜브 링크가 없어';return;}if(msg)msg.innerHTML='⏳ '+label+'… (1~2분, 기다려줘)';try{const r=await fetch(api(endpoint),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:'https://youtu.be/'+vid,file:c.name})});const j=await r.json();if(j.ok){state.content=await readContent(state.root);if(after)after();renderView();}else if(msg)msg.innerHTML='<span style="color:var(--accent)">실패: '+esc(j.msg||'')+'</span>';}catch(e){if(msg)msg.innerHTML='<span style="color:var(--accent)">연결 실패: '+esc(e.message)+'</span>';}};
   const gsum=$('#rdSum');if(gsum)gsum.onclick=()=>gen('/summarize','블로그 요약 생성');
-  const gscr=$('#rdScript');if(gscr)gscr.onclick=()=>{state.readScript=!state.readScript;renderView();};
+  const gscr=$('#rdScript');if(gscr)gscr.onclick=async()=>{
+    const c=(state.content||[]).find(x=>x.name===state.readSel);if(!c)return;
+    if(/## 📄 전체 스크립트/.test(c.raw)){state.readScript=!state.readScript;renderView();return;}  // 원문 있으면 토글
+    const vid=genVid(c);const msg=$('#rdGenMsg');
+    if(!vid){if(msg)msg.textContent='이 노트에 유튜브 링크가 없어';return;}
+    if(msg)msg.innerHTML='⏳ 전체 스크립트 가져오는 중… (수집 서버 필요, 1~2분)';
+    try{const r=await fetch(api('/transcript'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:'https://youtu.be/'+vid,file:c.name})});const j=await r.json();
+      if(j.ok){state.content=await readContent(state.root);state.readScript=true;renderView();}
+      else if(msg)msg.innerHTML='<span style="color:var(--mut)">아직 못 가져왔어요: '+esc(j.msg||'')+'</span>';
+    }catch(e){if(msg)msg.innerHTML='<span style="color:var(--mut)">전체 스크립트는 <b>수집 서버(로컬)</b>가 켜져 있을 때 가져올 수 있어요. 지금은 요약만 표시됩니다.</span>';}
+  };
   const add=$('#rdAdd');if(add)add.onclick=async()=>{const url=($('#rdUrl')||{}).value||'';const msg=$('#rdAddMsg');if(!url.trim()){if(msg)msg.textContent='링크를 붙여넣어줘';return;}if(msg)msg.innerHTML='🎬 자막 가져와 블로그 요약 중… (1~2분, 기다려줘)';add.disabled=true;try{const r=await fetch(api('/summarize'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url})});const j=await r.json();if(j.ok){state.content=await readContent(state.root);state.readSel=null;renderView();}else if(msg)msg.innerHTML='<span style="color:var(--accent)">실패: '+esc(j.msg||'')+'</span>';}catch(e){if(msg)msg.innerHTML='<span style="color:var(--accent)">연결 실패: '+esc(e.message)+'</span>';}add.disabled=false;};
-  const b=$('#rdBack');if(b)b.onclick=()=>history.back();
   const s=$('#rdSave');if(s)s.onclick=async()=>{const c=(state.content||[]).find(x=>x.name===state.readSel);if(!c)return;if(!state.writable){$('#rdMsg').textContent=' 쓰기권한 필요(볼트 편집 허용)';return;}try{await saveMemo(c,($('#rdReason')||{}).value||'',($('#rdOut')||{}).value||'');$('#rdMsg').innerHTML=' <span style="color:var(--green)">✓ 볼트에 저장됨</span>';}catch(e){$('#rdMsg').textContent=' 실패: '+e.message;}};
 }
 /* ── 노트 드로어 + 옵시디언 딥링크 ── */
