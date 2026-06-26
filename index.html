@@ -216,6 +216,7 @@
   .calleg .lg.consult:before{background:var(--accent)}
   .calleg .lg.kit:before{background:var(--green)}
   .calleg .lg.reel:before{background:#3f6fb0}
+  .calleg .lg.gcal:before{background:#7c5cff}
   .calgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line2);border-left:1px solid var(--line)}
   .caldow{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:7px 8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-weight:700}
   .calcell{min-height:92px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px;cursor:pointer;overflow:hidden;background:var(--card)}
@@ -227,7 +228,7 @@
   .calcell.today .cn{color:var(--accent);font-weight:800}
   .ev{font-size:10px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:8px;position:relative;color:var(--ink2)}
   .ev:before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:3px;border-radius:2px;background:var(--mut)}
-  .ev.consult:before{background:var(--accent)}.ev.kit:before{background:var(--green)}.ev.reel:before{background:#3f6fb0}
+  .ev.consult:before{background:var(--accent)}.ev.kit:before{background:var(--green)}.ev.reel:before{background:#3f6fb0}.ev.gcal:before{background:#7c5cff}
   .evmore{font-size:9.5px;color:var(--faint);padding-left:8px}
   .calgrid.mini .calcell{min-height:64px}
   .calleg .lg:before{content:"";width:9px;height:9px;border-radius:3px;background:var(--mut)}
@@ -247,7 +248,7 @@
   .wkall{font-size:9.5px;color:var(--faint);font-weight:700;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line2)}
   .wkallcell{min-height:24px;border-left:1px solid var(--line);border-bottom:1px solid var(--line2);padding:3px;display:flex;flex-direction:column;gap:3px}
   .wev{font-size:10.5px;line-height:1.3;padding:2px 7px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-  .wev.consult{background:#fdeae3;color:#c43e1c}.wev.kit{background:#e7f5ee;color:#15803d}.wev.reel{background:#e8eff7;color:#2f5e9e}
+  .wev.consult{background:#fdeae3;color:#c43e1c}.wev.kit{background:#e7f5ee;color:#15803d}.wev.reel{background:#e8eff7;color:#2f5e9e}.wev.gcal{background:#efe9ff;color:#5b3fd4}
   .wkbody{position:relative}
   .wkhr{font-size:10px;color:var(--faint);text-align:right;padding:2px 7px 0 0;border-top:1px solid var(--line)}
   .wkslot{border-left:1px solid var(--line);border-top:1px solid var(--line)}
@@ -256,6 +257,7 @@
   .wblk.consult{background:#fdeae3;color:#c43e1c;border-left:3px solid var(--accent)}
   .wblk.kit{background:#e7f5ee;color:#15803d;border-left:3px solid var(--green)}
   .wblk.reel{background:#e8eff7;color:#2f5e9e;border-left:3px solid #3f6fb0}
+  .wblk.gcal{background:#efe9ff;color:#5b3fd4;border-left:3px solid #7c5cff}
 
   /* 콘텐츠 상태 배지 + 필터 */
   .cbadge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
@@ -713,16 +715,18 @@ function viewReel(d){
 function wireReelSort(){main.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{state.reelSort=b.dataset.sort;renderView();});}
 
 /* ═══════════════ 캘린더(재사용) ═══════════════ */
-const KIND={consult:{c:'컨설팅',cls:'consult'},kit:{c:'RE:KIT',cls:'kit'},reel:{c:'릴스',cls:'reel'}};
+const KIND={consult:{c:'컨설팅',cls:'consult'},kit:{c:'RE:KIT',cls:'kit'},reel:{c:'릴스',cls:'reel'},gcal:{c:'일정',cls:'gcal'}};
 function calEvents(d){
   const ev=[];
   (d.cases||[]).forEach(p=>{const dt=pickDate(p.front['세션일']);if(dt)ev.push({date:dt,kind:'consult',path:p.path,label:p.front['이름']||p.name.replace('.md',''),sub:p.front['상품']||'',extra:p.front['세션시각']||p.front['세션시간']||'',meta:p.front['status']||''});});
   (d.kits||[]).forEach(p=>{const dt=pickDate(p.front['발행일']);if(dt)ev.push({date:dt,kind:'kit',path:p.path,label:p.front['콘텐츠명']||p.name.replace('.md',''),sub:'KIT'+(p.front['번호']||''),extra:p.front['category']||'',meta:''});});
   (d.reels||[]).forEach(p=>{const dt=pickDate(p.front['published']);if(dt)ev.push({date:dt,kind:'reel',path:p.path,label:p.front['title']||p.name.replace('.md',''),sub:num(N(p.front['조회수']))+' 조회',extra:'',meta:''});});
+  (state.gcal||[]).forEach(g=>{const dt=pickDate(g.date);if(dt)ev.push({date:dt,kind:'gcal',path:'',label:g.title,sub:'',extra:g.time||'',meta:''});});
   return ev;
 }
-const order=e=>({consult:0,kit:1,reel:2}[e.kind]);
-const KCOL={consult:'var(--accent)',kit:'var(--green)',reel:'#3f6fb0'};
+const order=e=>({consult:0,kit:1,reel:2,gcal:3}[e.kind]);
+const KCOL={consult:'var(--accent)',kit:'var(--green)',reel:'#3f6fb0',gcal:'#7c5cff'};
+async function readGcal(root){try{const dir=await getDir(root,['40_프로젝트','통합워크스페이스']);const fh=await dir.getFileHandle('gcal.json');return JSON.parse(await(await fh.getFile()).text());}catch(e){return [];}}
 /* 세션시각 등에서 시(hour) 추출: "14:00" / "오후 2시 30분" / "20시" → 소수시간(없으면 null) */
 function parseHM(s){s=String(s||'');let m=s.match(/(\d{1,2}):(\d{2})/);if(m)return +m[1]+(+m[2])/60;
   m=s.match(/(오전|오후)?\s*(\d{1,2})\s*시\s*(?:(반)|(\d{1,2})\s*분)?/);
@@ -765,7 +769,7 @@ function calWeek(events,ns){
   const start=s.mode==='day'?dayStart(s.anchor||today()):mondayOf(s.anchor||today());
   const cols=[];for(let i=0;i<ndays;i++){const c=new Date(start);c.setDate(start.getDate()+i);cols.push(c);}
   const timed=[], allday=cols.map(()=>[]);
-  cols.forEach((c,ci)=>{const k=dkey(c);events.filter(e=>dkey(e.date)===k).sort((a,b)=>order(a)-order(b)).forEach(e=>{const hm=e.kind==='consult'?parseHM(e.extra):null;if(hm!=null&&hm>=0&&hm<24)timed.push({e,ci,hm});else allday[ci].push(e);});});
+  cols.forEach((c,ci)=>{const k=dkey(c);events.filter(e=>dkey(e.date)===k).sort((a,b)=>order(a)-order(b)).forEach(e=>{const hm=(e.kind==='consult'||e.kind==='gcal')?parseHM(e.extra):null;if(hm!=null&&hm>=0&&hm<24)timed.push({e,ci,hm});else allday[ci].push(e);});});
   let minH=9,maxH=18;timed.forEach(x=>{minH=Math.min(minH,Math.floor(x.hm));maxH=Math.max(maxH,Math.ceil(x.hm+1));});
   minH=Math.max(0,Math.min(minH,9));maxH=Math.min(24,Math.max(maxH,18));
   const hours=[];for(let hh=minH;hh<maxH;hh++)hours.push(hh);
@@ -1310,13 +1314,13 @@ async function connect(handle){
   $('#vstat').innerHTML=state.writable?'볼트 연결됨 · 읽기 + 쓰기':'볼트 연결됨 · 읽기만';
   $('#reload').style.display='';
   main.innerHTML='<div class="gate"><div class="empty">볼트 읽는 중…</div></div>';
-  state.data=await loadData(handle);state.cards=await readCards(handle);state.acct=await readAcct(handle);state.content=await readContent(handle);applyCurrent();history.replaceState(curScene(),'');
+  state.data=await loadData(handle);state.cards=await readCards(handle);state.acct=await readAcct(handle);state.content=await readContent(handle);state.gcal=await readGcal(handle);applyCurrent();history.replaceState(curScene(),'');
 }
 $('#pick').onclick=async()=>{
   if(state.saved){try{await connect(state.saved);return;}catch(e){}}
   if(!window.showDirectoryPicker){main.innerHTML='<div class="gate"><div class="warn">이 페이지에선 폴더 열기가 안 돼요.<br>① 크롬·엣지인지 ② 주소가 <code>http://localhost</code>인지 확인 (file:// 은 막힘).</div></div>';return;}
   try{await connect(await window.showDirectoryPicker());}catch(e){if(e.name!=='AbortError')main.innerHTML='<div class="gate"><div class="warn">'+esc(e.message||e.name)+'<br><span style="color:var(--mut);font-size:12px">file:// 이면 localhost로 열어야 해요.</span></div></div>';}};
-$('#reload').onclick=async()=>{if(state.root){state.data=await loadData(state.root);state.cards=await readCards(state.root);state.acct=await readAcct(state.root);state.content=await readContent(state.root);state.learnQueue=undefined;state.exec=undefined;renderView();}};
+$('#reload').onclick=async()=>{if(state.root){state.data=await loadData(state.root);state.cards=await readCards(state.root);state.acct=await readAcct(state.root);state.content=await readContent(state.root);state.gcal=await readGcal(state.root);state.learnQueue=undefined;state.exec=undefined;renderView();}};
 /* ═══════════════ 히스토리(브라우저 뒤로가기) ═══════════════ */
 function curScene(){return {v:state.view,r:state.readSel||null,l:state.learnSel||null,o:state.ovPath||null};}
 function applyCurrent(){
